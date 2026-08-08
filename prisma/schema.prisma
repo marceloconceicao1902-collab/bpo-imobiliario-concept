@@ -1,0 +1,208 @@
+// Prisma Schema para Plataforma SaaS BPO Financeiro - Concept Gestão
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  BPO_OPERATOR
+  CLIENT_REAL_ESTATE
+}
+
+enum PlanType {
+  BPO_VOLUME
+  GESTÃO_RECEBIVEIS
+}
+
+enum PlanTier {
+  EMPRESA_A     // Até 80 movimentações - R$ 1.990/mês
+  EMPRESA_B     // Até 450 movimentações - R$ 2.290/mês
+  EMPRESA_C     // Até 900 movimentações - R$ 2.690/mês
+  START         // Recebíveis até R$ 100k - R$ 990/mês
+  GROWTH        // Recebíveis R$ 100k a 500k - R$ 1.990/mês
+  PERFORMANCE   // Recebíveis R$ 500k a 2M - R$ 3.990/mês
+}
+
+enum TicketStatus {
+  PENDENTE_IMOBILIARIA
+  EM_PROCESSAMENTO_BPO
+  CONCLUIDO
+}
+
+enum TicketPriority {
+  BAIXA
+  MEDIA
+  ALTA
+  URGENTE
+}
+
+enum ConciliationStatus {
+  CONCILIADO
+  PENDENTE_EXTRATO
+  DIVERGENTE
+  EM_ANALISE
+}
+
+enum DebtStage {
+  LEMBRETE_PREVENTIVO
+  NOTIFICACAO_ATRASO
+  COBRANCA_EXTRAJUDICIAL
+  ACORDO_EM_ANDAMENTO
+  JURIDICO
+}
+
+enum LeadStage {
+  LEAD_RECEBIDO
+  REUNIAO_AGENDADA
+  PROPOSTA_ENVIADA
+  EM_NEGOCIACAO
+  CONTRATO_FECHADO
+  PERDIDO
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  role      Role     @default(CLIENT_REAL_ESTATE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  clientId  String?
+  client    RealEstateClient? @relation(fields: [clientId], references: [id])
+}
+
+model RealEstateClient {
+  id                    String        @id @default(uuid())
+  companyName           String
+  tradeName             String
+  cnpj                  String        @unique
+  phone                 String
+  contactName           String
+  activePlan            PlanType      @default(BPO_VOLUME)
+  planTier              PlanTier      @default(EMPRESA_A)
+  monthlyVolumeLimit    Int           @default(80)
+  currentMonthVolume    Int           @default(0)
+  monthlyRevenue        Float         @default(0.0)
+  overageFeeRate        Float         @default(300.0) // R$ 300 por faixa excedente
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  users                 User[]
+  tickets               BPOTicket[]
+  repasses              Repasse[]
+  boletos               Boleto[]
+  delinquentTenants     DelinquentTenant[]
+  billingReports        BillingReport[]
+  documents             DocumentDrive[]
+}
+
+model Proposal {
+  id                    String      @id @default(uuid())
+  leadName              String
+  realEstateName        String
+  email                 String
+  phone                 String
+  estimatedVolume       Int
+  estimatedRevenue      Float
+  selectedProduct       PlanType
+  recommendedTier       PlanTier
+  calculatedBasePrice   Float
+  estimatedOverage      Float
+  totalMonthlyPrice     Float
+  stage                 LeadStage   @default(LEAD_RECEBIDO)
+  notes                 String?
+  createdAt             DateTime    @default(now())
+}
+
+model BPOTicket {
+  id              String         @id @default(uuid())
+  ticketNumber    String         @unique
+  title           String
+  description     String
+  category        String         // ex: "Repasse Proprietário", "Pagamento Condomínio", "NF-e"
+  status          TicketStatus   @default(PENDENTE_IMOBILIARIA)
+  priority        TicketPriority @default(MEDIA)
+  slaDeadline     DateTime
+  isSlaViolated   Boolean        @default(false)
+  clientId        String
+  client          RealEstateClient @relation(fields: [clientId], references: [id])
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model Repasse {
+  id                  String             @id @default(uuid())
+  ownerName           String
+  propertyAddress     String
+  grossAmount         Float
+  feeAmount           Float
+  netAmount           Float
+  dueDate             DateTime
+  conciliationStatus ConciliationStatus @default(PENDENTE_EXTRATO)
+  bankAccount         String
+  clientId            String
+  client              RealEstateClient   @relation(fields: [clientId], references: [id])
+  createdAt           DateTime           @default(now())
+}
+
+model Boleto {
+  id            String           @id @default(uuid())
+  tenantName    String
+  amount        Float
+  dueDate       DateTime
+  paymentDate   DateTime?
+  status        String           // "PAGO", "EM_ATRASO", "AGUARDANDO"
+  barCode       String
+  clientId      String
+  client        RealEstateClient @relation(fields: [clientId], references: [id])
+  createdAt     DateTime         @default(now())
+}
+
+model DelinquentTenant {
+  id                String           @id @default(uuid())
+  tenantName        String
+  propertyAddress   String
+  ownerName         String
+  debtAmount        Float
+  daysOverdue       Int
+  debtStage         DebtStage        @default(LEMBRETE_PREVENTIVO)
+  lastContactDate   DateTime?
+  notes             String?
+  clientId          String
+  client            RealEstateClient @relation(fields: [clientId], references: [id])
+  createdAt         DateTime         @default(now())
+}
+
+model BillingReport {
+  id                    String           @id @default(uuid())
+  referenceMonth        String           // ex: "2026-08"
+  basePrice             Float
+  usedTransactions      Int
+  limitTransactions     Int
+  overageBracketsCount  Int
+  overageFeeAmount      Float            // n * R$ 300
+  totalBilled           Float
+  paid                  Boolean          @default(false)
+  clientId              String
+  client                RealEstateClient @relation(fields: [clientId], references: [id])
+  createdAt             DateTime         @default(now())
+}
+
+model DocumentDrive {
+  id          String           @id @default(uuid())
+  fileName    String
+  fileType    String           // "OFX", "PDF", "IMAGE"
+  fileSize    String
+  category    String           // "Extrato Bancário", "Comprovante", "Nota Fiscal"
+  uploadedBy  String
+  clientId    String
+  client      RealEstateClient @relation(fields: [clientId], references: [id])
+  createdAt   DateTime         @default(now())
+}
