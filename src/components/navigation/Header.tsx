@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { UserRole } from '@/lib/types';
-import { Building2, UserCheck, PhoneCall, ShieldAlert, LogOut } from 'lucide-react';
+import { Building2, UserCheck, PhoneCall, LogOut } from 'lucide-react';
 
 interface HeaderProps {
   userRole: UserRole;

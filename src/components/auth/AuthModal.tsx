@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState, useId } from 'react';
-import { UserRole } from '@/lib/types';
-import { Building2, ShieldCheck, Lock, Mail, ArrowRight, Sparkles, CheckCircle2, User, Key } from 'lucide-react';
+import { Building2, ShieldCheck, Lock, Mail, ArrowRight, Sparkles } from 'lucide-react';
 
 interface AuthModalProps {
   initialRole?: 'CLIENT' | 'ADMIN';
