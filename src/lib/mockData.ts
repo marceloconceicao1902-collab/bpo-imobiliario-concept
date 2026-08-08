@@ -223,7 +223,7 @@ export const MOCK_DOCUMENTS: DocumentItem[] = [
     fileName: 'Extrato_Bancario_Itau_Garantia_082026.ofx',
     fileType: 'OFX',
     fileSize: '420 KB',
-    category: 'Extrato Bancario',
+    category: 'Extrato Bancário',
     uploadedAt: '08/08/2026 08:30',
   },
   {
