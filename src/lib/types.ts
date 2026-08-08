@@ -2,6 +2,8 @@
 
 export type SystemView = 'LANDING' | 'PORTAL' | 'CRM';
 
+export type UserRole = 'GUEST' | 'CLIENT' | 'ADMIN';
+
 export type ProductType = 'BPO_VOLUME' | 'GESTÃO_RECEBIVEIS';
 
 export interface VolumeTier {
