@@ -1,14 +1,13 @@
 'use client';
 
 import React from 'react';
-import { SystemView } from '@/lib/types';
-import { Building2, Phone, Mail, MapPin, ArrowRight } from 'lucide-react';
+import { Building2, Phone, Mail, MapPin, ArrowRight, ShieldCheck } from 'lucide-react';
 
 interface FooterProps {
-  onViewChange: (view: SystemView) => void;
+  onOpenAuthModal: (role?: 'CLIENT' | 'ADMIN') => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onViewChange }) => {
+export const Footer: React.FC<FooterProps> = ({ onOpenAuthModal }) => {
   return (
     <footer className="bg-concept-dark border-t border-concept-border py-12 text-xs text-concept-muted">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -33,19 +32,24 @@ export const Footer: React.FC<FooterProps> = ({ onViewChange }) => {
             <h4 className="font-bold text-white mb-3 uppercase tracking-wider text-[11px]">Navegação Rápida</h4>
             <ul className="space-y-2">
               <li>
-                <button onClick={() => onViewChange('LANDING')} className="hover:text-concept-accent transition-colors">
-                  Visão 1: Landing Page Comercial
-                </button>
+                <a href="#solucoes" className="hover:text-concept-accent transition-colors">
+                  BPO Financeiro & Recebíveis
+                </a>
               </li>
               <li>
-                <button onClick={() => onViewChange('PORTAL')} className="hover:text-concept-accent transition-colors">
-                  Visão 2: Portal do Cliente Logado
-                </button>
+                <a href="#calculadora" className="hover:text-concept-accent transition-colors">
+                  Calculadora Interativa de Planos
+                </a>
               </li>
               <li>
-                <button onClick={() => onViewChange('CRM')} className="hover:text-concept-accent transition-colors">
-                  Visão 3: CRM & Operação Interna BPO
-                </button>
+                <a href="#planos" className="hover:text-concept-accent transition-colors">
+                  Tabela Oficial de Preços
+                </a>
+              </li>
+              <li>
+                <a href="#faq" className="hover:text-concept-accent transition-colors">
+                  Perguntas Frequentes (FAQ)
+                </a>
               </li>
             </ul>
           </div>
@@ -71,26 +75,32 @@ export const Footer: React.FC<FooterProps> = ({ onViewChange }) => {
 
           {/* Portal Access box */}
           <div className="p-4 rounded-2xl bg-concept-slate border border-concept-border space-y-3">
-            <span className="font-bold text-white block">Área Restrita do Cliente</span>
+            <span className="font-bold text-white block">Área Restrita da Imobiliária</span>
             <p className="text-[11px] text-concept-muted">
               Já é parceiro Concept Gestão? Acompanhe em tempo real as rotinas do seu BPO.
             </p>
             <button
-              onClick={() => onViewChange('PORTAL')}
-              className="w-full glow-blue-button py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5"
+              onClick={() => onOpenAuthModal('CLIENT')}
+              className="w-full glow-cyan-button py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5"
             >
-              <span>Acessar Portal Imobiliária</span>
+              <span>Acessar Portal do Cliente</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
 
-        <div className="border-t border-concept-border/60 pt-6 flex flex-col sm:flex-row items-center justify-between text-[11px]">
+        <div className="border-t border-concept-border/60 pt-6 flex flex-col sm:flex-row items-center justify-between text-[11px] gap-4">
           <span>© 2026 Concept Gestão. Todos os direitos reservados. Plataforma SaaS BPO Imobiliário.</span>
-          <div className="flex gap-4 mt-2 sm:mt-0">
-            <span className="hover:underline cursor-pointer">Termos de Uso</span>
-            <span className="hover:underline cursor-pointer">Política de Privacidade</span>
-            <span className="hover:underline cursor-pointer">LGPD Imobiliária</span>
+
+          {/* Secret Admin BPO Login Link for Team */}
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => onOpenAuthModal('ADMIN')}
+              className="text-concept-muted hover:text-purple-300 transition-colors flex items-center gap-1 text-[11px]"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
+              <span>Acesso Restrito Equipe BPO (CRM Operacional)</span>
+            </button>
           </div>
         </div>
       </div>
